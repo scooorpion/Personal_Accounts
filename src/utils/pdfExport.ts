@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
-import { Transaction } from '@/types/financial';
+import { TransactionData } from '@/types/financial';
 import { generateCategoryStats } from './dataProcessor';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -18,7 +18,7 @@ export interface ExportData {
   totalExpense: number;
   transactionCount: number;
   dateRange: string;
-  transactions: Transaction[];
+  transactions: TransactionData[];
 }
 
 export const exportToPDF = async (chartsElementId: string, tablesElementId: string, data: ExportData) => {
