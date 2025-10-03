@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF导出测试</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .export-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .export-btn:hover {
+            background-color: #0056b3;
+        }
+        .export-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF导出功能测试</h1>
+        <p>这是一个用于测试PDF导出功能的页面，包含模拟的图表和数据表格。</p>
+        
+        <div id="charts-container">
+            <h2>图表区域</h2>
+            <div class="chart-container">
+                模拟图表内容<br>
+                收入: ¥15,000<br>
+                支出: ¥8,500
+            </div>
+            <div class="chart-container" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                趋势图表<br>
+                本月增长: +12%
+            </div>
+        </div>
+        
+        <div id="tables-container">
+            <h2>数据表格</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>类型</th>
+                        <th>金额</th>
+                        <th>描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2024-01-15</td>
+                        <td>收入</td>
+                        <td>¥5,000</td>
+                        <td>工资收入</td>
+                    </tr>
+                    <tr>
+                        <td>2024-01-14</td>
+                        <td>支出</td>
+                        <td>¥1,200</td>
+                        <td>餐饮消费</td>
+                    </tr>
+                    <tr>
+                        <td>2024-01-13</td>
+                        <td>支出</td>
+                        <td>¥800</td>
+                        <td>交通费用</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div>
+            <button class="export-btn" onclick="testPDFExport()">测试PDF导出</button>
+            <button class="export-btn" onclick="testChartOnly()">仅导出图表</button>
+            <div id="status"></div>
+        </div>
+    </div>
+    
+    <script>
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${isError ? 'error' : 'success'}">${message}</div>`;
+        }
+        
+        async function testPDFExport() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '导出中...';
+            
+            try {
+                showStatus('开始PDF导出测试...');
+                
+                const chartsElement = document.getElementById('charts-container');
+                const tablesElement = document.getElementById('tables-container');
+                
+                if (!chartsElement || !tablesElement) {
+                    throw new Error('未找到必要的DOM元素');
+                }
+                
+                console.log('开始捕获图表区域...');
+                const chartsCanvas = await html2canvas(chartsElement, {
+                    scale: 1.2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: true
+                });
+                
+                console.log('图表捕获完成，尺寸:', chartsCanvas.width, 'x', chartsCanvas.height);
+                
+                console.log('开始捕获表格区域...');
+                const tablesCanvas = await html2canvas(tablesElement, {
+                    scale: 1.2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: true
+                });
+                
+                console.log('表格捕获完成，尺寸:', tablesCanvas.width, 'x', tablesCanvas.height);
+                
+                // 创建PDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                // 添加标题
+                pdf.setFontSize(20);
+                pdf.text('财务报告测试', 20, 20);
+                
+                // 添加图表
+                const chartImgData = chartsCanvas.toDataURL('image/png');
+                const chartWidth = 170;
+                const chartHeight = (chartsCanvas.height * chartWidth) / chartsCanvas.width;
+                pdf.addImage(chartImgData, 'PNG', 20, 40, chartWidth, chartHeight);
+                
+                // 添加新页面
+                pdf.addPage();
+                
+                // 添加表格
+                const tableImgData = tablesCanvas.toDataURL('image/png');
+                const tableWidth = 170;
+                const tableHeight = (tablesCanvas.height * tableWidth) / tablesCanvas.width;
+                pdf.addImage(tableImgData, 'PNG', 20, 20, tableWidth, tableHeight);
+                
+                // 保存PDF
+                pdf.save('测试报告.pdf');
+                
+                showStatus('PDF导出成功！文件已下载。');
+                
+            } catch (error) {
+                console.error('PDF导出失败:', error);
+                showStatus(`PDF导出失败: ${error.message}`, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '测试PDF导出';
+            }
+        }
+        
+        async function testChartOnly() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '导出中...';
+            
+            try {
+                showStatus('开始图表导出测试...');
+                
+                const chartsElement = document.getElementById('charts-container');
+                
+                if (!chartsElement) {
+                    throw new Error('未找到图表元素');
+                }
+                
+                const canvas = await html2canvas(chartsElement, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = '图表测试.png';
+                link.href = canvas.toDataURL();
+                link.click();
+                
+                showStatus('图表导出成功！');
+                
+            } catch (error) {
+                console.error('图表导出失败:', error);
+                showStatus(`图表导出失败: ${error.message}`, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '仅导出图表';
+            }
+        }
+    </script>
+</body>
+</html>
